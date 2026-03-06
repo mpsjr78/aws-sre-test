@@ -19,12 +19,16 @@ phases:
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
   post_build:
     commands:
-      # Volta para a raiz do projeto para criar o artefato no lugar certo
       - cd $CODEBUILD_SRC_DIR
       - echo Build completed on `date`
       - echo Pushing the Docker images...
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Updating Amazon EKS cluster...
+      # Conecta no Cluster
+      - aws eks update-kubeconfig --name NOME_DO_SEU_CLUSTER_AQUI --region us-east-1
+      # Atualiza a imagem do Deployment
+      - kubectl set image deployment/yelb-ui yelb-ui=$REPOSITORY_URI:$IMAGE_TAG
       - echo Writing image definitions file...
       - printf '[{"name":"yelb-ui","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 artifacts:
