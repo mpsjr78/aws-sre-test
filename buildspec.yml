@@ -6,7 +6,7 @@ phases:
       - echo Logging in to Docker Hub...
       - echo "$DOCKERHUB_PASS" | docker login --username "$DOCKERHUB_USER" --password-stdin
       - echo Logging in to Amazon ECR...
-      - REPOSITORY_URI=346234084924.dkr.ecr.us-east-1.amazonaws.com/yelb-ui
+      - REPOSITORY_URI=545009864726.dkr.ecr.us-east-1.amazonaws.com/yelb-ui
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $REPOSITORY_URI
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
