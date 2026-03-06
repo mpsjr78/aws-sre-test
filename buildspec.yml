@@ -19,6 +19,8 @@ phases:
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
   post_build:
     commands:
+      # Volta para a raiz do projeto para criar o artefato no lugar certo
+      - cd $CODEBUILD_SRC_DIR
       - echo Build completed on `date`
       - echo Pushing the Docker images...
       - docker push $REPOSITORY_URI:latest
@@ -26,4 +28,5 @@ phases:
       - echo Writing image definitions file...
       - printf '[{"name":"yelb-ui","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 artifacts:
-    files: imagedefinitions.json
+  files:
+    - imagedefinitions.json
