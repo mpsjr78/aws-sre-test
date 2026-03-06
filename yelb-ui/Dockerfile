@@ -1,21 +1,28 @@
-# Estágio 1: Build (Usando o ambiente base oficial que já contém a fundação do Angular)
-FROM mreferre/yelb-ui-env:0.4 AS builder
+# Estágio 1: Build (Usando o espelho público da AWS para evitar limites)
+FROM public.ecr.aws/docker/library/node:12-stretch AS builder
 
-# O template original vive nesta pasta dentro da imagem
-WORKDIR /clarity-seed
+WORKDIR /app
 
-# Copiamos o nosso código local (o "patch" do Yelb) para sobrescrever a base
+# 1. Baixar a "fundação" (o template original da VMware)
+RUN git clone https://github.com/vmware/clarity-seed.git
+
+# 2. Entrar na pasta do template
+WORKDIR /app/clarity-seed
+
+# 3. Copiar o nosso código local (o "patch" do Yelb) por cima da fundação
+# Isso vai mesclar os nossos arquivos com os originais, fornecendo o tsconfig.json que faltava!
 COPY . .
 
-# Instalamos as dependências e compilamos
+# 4. Instalar as dependências e compilar
 RUN npm install --unsafe-perm
+RUN npm install -g @angular/cli@8.3.29 --unsafe-perm
 RUN ng build --prod
 
-# Estágio 2: Servidor Web (Leve e rápido usando o espelho da AWS)
+# Estágio 2: Servidor Web (Nginx super leve)
 FROM public.ecr.aws/docker/library/nginx:stable-alpine
 LABEL maintainer="sre-lab@exemplo.com"
 
-# Copiamos os arquivos finais compilados para o Nginx
-COPY --from=builder /clarity-seed/dist/ /usr/share/nginx/html/
+# 5. Copiar os arquivos finais gerados
+COPY --from=builder /app/clarity-seed/dist/ /usr/share/nginx/html/
 
 EXPOSE 80
