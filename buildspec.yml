@@ -24,4 +24,5 @@ phases:
       # ESTA LINHA É A CHAVE: O nome "hello-container" deve ser o mesmo que usaremos na Task Definition
       - printf '[{"name":"hello-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 artifacts:
-    files: imagedefinitions.json
+    files: 
+        - imagedefinitions.json
