@@ -18,17 +18,9 @@ phases:
       - echo "Fazendo o push da imagem..."
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo "Gerando imagedefinitions.json..."
-      - |
-        cat <<EOF > imagedefinitions.json
-        [
-          {
-            "name": "hello-container",
-            "imageUri": "${REPOSITORY_URI}:${IMAGE_TAG}"
-          }
-        ]
-        EOF
-      - echo "Conteúdo do arquivo gerado:"
+      - echo "Gerando imagedefinitions.json usando JQ..."
+      - jq -n --arg name "hello-container" --arg uri "${REPOSITORY_URI}:${IMAGE_TAG}" '[{"name":$name,"imageUri":$uri}]' > imagedefinitions.json
+      - echo "Lendo o arquivo gerado para confirmar:"
       - cat imagedefinitions.json
 
 artifacts:
