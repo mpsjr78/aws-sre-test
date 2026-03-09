@@ -3,10 +3,8 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo Logging in to Docker Hub...
-      - echo "$DOCKERHUB_PASS" | docker login --username "$DOCKERHUB_USER" --password-stdin
       - echo Logging in to Amazon ECR...
-      - REPOSITORY_URI=545009864726.dkr.ecr.us-east-1.amazonaws.com/yelb-ui
+      - REPOSITORY_URI=545009864726.dkr.ecr.us-east-1.amazonaws.com/hello-sre-repo
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $REPOSITORY_URI
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
@@ -14,23 +12,16 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - cd yelb-ui
       - docker build -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
   post_build:
     commands:
-      - cd $CODEBUILD_SRC_DIR
       - echo Build completed on `date`
       - echo Pushing the Docker images...
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo Updating Amazon EKS cluster...
-      # Conecta no Cluster
-      - aws eks update-kubeconfig --name sre-compliance-cluster --region us-east-1
-      # Atualiza a imagem do Deployment
-      - kubectl set image deployment/yelb-ui yelb-ui=$REPOSITORY_URI:$IMAGE_TAG
       - echo Writing image definitions file...
-      - printf '[{"name":"yelb-ui","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      # ESTA LINHA É A CHAVE: O nome "hello-container" deve ser o mesmo que usaremos na Task Definition
+      - printf '[{"name":"hello-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 artifacts:
-  files:
-    - imagedefinitions.json
+    files: imagedefinitions.json
