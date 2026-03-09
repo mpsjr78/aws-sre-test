@@ -21,8 +21,10 @@ phases:
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo Writing image definitions file...
-      # ESTA LINHA É A CHAVE: O nome "hello-container" deve ser o mesmo que usaremos na Task Definition
-      - printf '[{"name":"hello-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      # Método blindado usando echo e escapando as aspas duplas
+      - echo "[{\"name\":\"hello-container\",\"imageUri\":\"${REPOSITORY_URI}:${IMAGE_TAG}\"}]" > imagedefinitions.json
+      # Imprime o arquivo no log para termos certeza absoluta do que foi gerado
+      - cat imagedefinitions.json
 artifacts:
     files: 
         - imagedefinitions.json
